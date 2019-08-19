@@ -1,0 +1,187 @@
+---
+title: "Data Science Milestone Report"
+author: "jacethedatascientist"
+date: "August 18, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Data Science Capstone
+## Milestone Report
+#### *Jace Galleon*
+
+***
+
+## I. Project Overview
+The goal of this project is just to display that you've gotten used to working with the data and that you are on track to create your prediction algorithm. You'll be doing predictive modelling to give the word most likely to follow a word or a group of words. 
+
+With this, a large set of text file from twitter, news and blog has been made available in the URL below. During this Capstone Project, we'll be focusing only on the Txt files in English.
+
+DATA SRC: https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip
+
+In this **Milestone Report**, we'll be discussing the early steps in this project, the initial loading, and exploration, in order to further understand how the data looks like and to decide what further action we'll be using.
+
+***
+
+## II. Dataset and Libraries
+First is to load the txt files from the internet with link provided **above**.
+After downloading, read the files.
+
+```{r , cache = TRUE, echo = TRUE}
+library(dplyr)
+library(stringi)
+library(NLP)
+library(RWeka)
+library(ggplot2)
+library(downloader)
+```
+
+```{r , cache = TRUE, echo = FALSE}
+setwd("./projectData/final/en_US")
+enTwitter<-readLines("en_US.twitter.txt",warn=FALSE,encoding="UTF-8")
+enBlogs<-readLines("en_US.blogs.txt",warn=FALSE,encoding="UTF-8")
+enNews<-readLines("en_US.news.txt",warn=FALSE,encoding="UTF-8")
+```
+
+***
+
+## III. Exploration
+### A. Data Preparation
+```{r , cache = TRUE, echo = TRUE}
+summary(enBlogs)
+summary(enNews)
+summary(enTwitter)
+```
+
+```{r , cache = TRUE, echo = TRUE}
+twitterwords <-stri_stats_latex(enTwitter)[4]
+blogswords <-stri_stats_latex(enBlogs)[4]
+newswords <-stri_stats_latex(enNews)[4]
+nchar_twitter<-sum(nchar(enTwitter))
+nchar_blogs<-sum(nchar(enBlogs))
+nchar_news<-sum(nchar(enNews))
+
+data.frame("File Name" = c("twitter", "blogs", "news"),
+           "num.lines" = c(length(enTwitter),length(enBlogs), length(enNews)),
+           "num.words" = c(sum(blogswords), sum(newswords), sum(twitterwords)),
+           "Num of character"=c(nchar_blogs,nchar_news,nchar_twitter))
+```
+
+Using only **5%** from each of the Txt files, create a **new sample file** that will, then, be used for the modelling.
+```{r , cache = TRUE, echo = TRUE}
+set.seed(0000)
+enSample <- c(sample(enBlogs, length(enBlogs) * 0.05),
+              sample(enNews, length(enNews) * 0.05),
+              sample(enTwitter, length(enTwitter) * 0.05)
+)
+```
+
+
+### B. Data Pre-processing
+1. Convert the TXT files into *Corpus* files.
+```{r , cache = TRUE, echo = TRUE}
+enCorpus <- VCorpus(VectorSource(enSample))
+enCorpus <- tm_map(enCorpus, content_transformer(function(x) iconv(x, to="ASCII", sub = "")))
+enCorpus <- tm_map(enCorpus, tolower)
+enCorpus <- tm_map(enCorpus, removePunctuation, preserve_intra_word_dashes = TRUE)
+enCorpus <- tm_map(enCorpus, removeNumbers)
+enCorpus <- tm_map(enCorpus, stripWhitespace)
+enCorpus <- tm_map(enCorpus, PlainTextDocument)
+```
+
+2. Create a token for each of the corpus files.
+**NOTE** - *The greater the number of tokens, the more accurate the results, of course, it'd be slower.*
+```{r , cache = TRUE, echo = TRUE}
+Unigram <- function(x) {NGramTokenizer(x, Weka_control(min = 1,max = 1))}
+Bigram <- function(x) {NGramTokenizer(x, Weka_control(min = 2, max = 2))}
+Trigram <- function(x) {NGramTokenizer(x, Weka_control(min = 3, max = 3))}
+Quadgram <- function(x) {NGramTokenizer(x, Weka_control(min = 4, max = 4))}
+Quingram <- function(x) {NGramTokenizer(x, Weka_control(min = 5, max = 5))}
+Hexagram <- function(x) {NGramTokenizer(x, Weka_control(min = 6, max = 6))}
+Heptagram<- function(x) {NGramTokenizer(x, Weka_control(min = 7, max = 7))}
+Octagram <- function(x) {NGramTokenizer(x, Weka_control(min = 8, max = 8))}
+Nonagram <- function(x) {NGramTokenizer(x, Weka_control(min = 9, max = 9))}
+Decagram <- function(x) {NGramTokenizer(x, Weka_control(min = 10, max = 10))}
+```
+
+```{r , cache = TRUE, echo = TRUE}
+unigramD <- TermDocumentMatrix(enCorpus, control=list(tokenize=Unigram, wordLengths = c(1, Inf)))
+bigramD <- TermDocumentMatrix(enCorpus, control=list(tokenize=Bigram, wordLengths = c(1, Inf)))
+trigramD <- TermDocumentMatrix(enCorpus, control=list(tokenize=Trigram, wordLengths = c(1, Inf)))
+quadgramD <- TermDocumentMatrix(enCorpus, control=list(tokenize=Quadgram, wordLengths = c(1, Inf)))
+quingramD <- TermDocumentMatrix(enCorpus, control=list(tokenize=Quingram, wordLengths = c(1, Inf)))
+hexagramD <- TermDocumentMatrix(enCorpus, control=list(tokenize=Hexagram, wordLengths = c(1, Inf)))
+heptagramD <- TermDocumentMatrix(enCorpus, control=list(tokenize=Heptagram, wordLengths = c(1, Inf)))
+octagramD <- TermDocumentMatrix(enCorpus, control=list(tokenize=Octagram, wordLengths = c(1, Inf)))
+nonagramD <- TermDocumentMatrix(enCorpus, control=list(tokenize=Nonagram, wordLengths = c(1, Inf)))
+decagramD <- TermDocumentMatrix(enCorpus, control=list(tokenize=Decagram, wordLengths = c(1, Inf)))
+```
+
+### C. Plots
+For the time being, I'll be showing you only up to the **Trigram** (*long running time*).
+```{r , cache = TRUE, echo = TRUE}
+library(tidytext)
+unigram_td <- tidy(unigramD)
+bigram_td <- tidy(bigramD)
+trigram_td <- tidy(trigramD)
+quadgram_td <- tidy(quadgramD)
+quingram_td <- tidy(quingramD)
+hexagram_td <- tidy(hexagramD)
+heptagram_td <- tidy(heptagramD)
+octagram_td <- tidy(octagramD)
+nonagram_td <- tidy(nonagramD)
+decagram_td <- tidy(decagramD)
+```
+
+```{r , cache = TRUE, echo = TRUE}
+unigram_data <- unigram_td[order(-unigram_td$count),]
+bigram_data <- bigram_td[order(-bigram_td$count),]
+trigram_data <- trigram_td[order(-trigram_td$count),]
+quadgram_data <- quadgram_td[order(-quadgram_td$count),]
+quingram_data <- quingram_td[order(-quingram_td$count),]
+hexagram_data <- hexagram_td[order(-hexagram_td$count),]
+heptagram_data <- heptagram_td[order(-heptagram_td$count),]
+octagram_data <- octagram_td[order(-octagram_td$count),]
+nonagram_data <- nonagram_td[order(-nonagram_td$count),]
+decagram_data <- decagram_td[order(-decagram_td$count),]
+```
+
+##### UNIGRAM
+```{r , cache = TRUE, echo = TRUE}
+ggplot(head(unigram_data,12), aes(x = term,y = count))+
+    geom_bar(stat="identity",fill = I("grey10"))+
+    labs(title="Unigrams",x="Most Words",y="Frequency")+
+    theme(axis.text.x=element_text(angle=60))
+```
+
+##### BIGRAM
+```{r , cache = TRUE, echo = TRUE}
+ggplot(head(bigram_data,12), aes(x=term,y=count))+
+    geom_bar(stat="identity",fill = I("grey20"))+
+    labs(title="Bigrams",x="Most Words",y="Frequency")+
+    theme(axis.text.x=element_text(angle=60))
+```
+
+##### TRIGRAM
+```{r , cache = TRUE, echo = TRUE}
+ggplot(head(trigram_data,12), aes(x=term,y=count))+
+    geom_bar(stat="identity",fill = I("grey30"))+
+    labs(title="Trigrams",x="Most Words",y="Frequency")+
+    theme(axis.text.x=element_text(angle=60))
+```
+
+***
+
+## IV. Future Plans
+
+After exploring the txt files by simulating the tokens and creating N-grams from Unigram up to the Trigram, I'll be:
+1. Finalizing the prediction model for each of the N-Gram, up to 10gram;
+2. Creating the Shiny App and deploying the model in it; and
+3. Creating a Pitch for the app.
+
+***
+
+*This formally ends the Course Project. Thank You!*

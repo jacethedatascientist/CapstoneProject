@@ -1,0 +1,59 @@
+---
+title: "Capstone Project"
+author: "jacethedatascientist"
+date: "August 19, 2019"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## <code>Introduction</code>
+
+This is the Final Project of the Data Science Module.
+
+The Word Predictor App was created to predict the next word given a *number of words*. One of its real world application is the SwiftKey that is widely used in our today's mobile phones, be it Android or IOS.
+
+It applies the concept of Natural Language Processing to create an algorithm to predict those words.
+
+
+## <code>What is a Natural Language Processing?</code>
+**Natural Language Processing**, usually shortened as NLP, is a branch of artificial intelligence that deals with the interaction between computers and humans using the natural language. The ultimate objective of NLP is to read, decipher, understand, and make sense of the human languages in a manner that is valuable. - *Dr. Michael J. Garbade, "A Simple Introduction to Natural Language Processing"*
+
+## <code>Word Predictor?</code>
+It is composed on the applied concept of the NLP and predictive modelling in order to predict the following words based on the pattern from the entered words, just like the predictive keyboards in your Mobile Phones.
+
+You can find the app here:
+Shiny App : https://jacethedatascientist.shinyapps.io/TextPredictor_NLP/  
+GH Repo : https://github.com/jacethedatascientist/DataScienceCapstoneProject
+
+---
+<center>
+```{r, echo = FALSE, fig.cap="Word Predictor", out.width = '100%'}
+knitr::include_graphics("C://Users/10012222/Desktop/Coursera/Capstone Project/Dataset/Text Predictor.PNG")
+```
+<center>
+
+## <code>How to Use the Word Predictor?</code>
+1. Just type in your **message** in the input box.
+2. Select how many **options** you prefer.
+3. Click the <code>Frequency</code> to know the top word from the list.
+
+
+## <code>Body Mass Index Calculator</code>
+<br>
+That's it!
+<br>
+You may now go back to the application and input the necessary details to help you finish your message.
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+*This formally ends the Capstone Project. Thank You!*
